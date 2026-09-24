@@ -1,0 +1,24 @@
+# core
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pydantic>=2.7
+python-dotenv>=1.0
+langgraph>=0.2
+openai>=1.40            # OpenAI-compatible client, used for xAI Grok / Groq
+
+# data hub
+duckdb>=1.1
+pandas>=2.2
+openpyxl>=3.1           # Excel support
+pyarrow>=16             # Parquet support
+sqlglot>=25             # SQL safety validation
+
+# RAG
+chromadb>=0.5
+sentence-transformers>=3.0
+pypdf>=4.2
+
+# scripts / tests
+reportlab>=4.2          # only for scripts/generate_docs.py
+pytest>=8

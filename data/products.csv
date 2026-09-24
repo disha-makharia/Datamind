@@ -1,0 +1,33 @@
+product_id,product_name,category,brand,unit_price,cost_price,launch_date
+P001,Nova Smart TV 43 inch,Electronics,Nova,29999,23500,2023-06-01
+P002,Nova Smart TV 55 inch,Electronics,Nova,45999,36800,2023-06-01
+P003,NovaSound X2 Earbuds,Electronics,NovaSound,2499,1350,2025-03-01
+P004,NovaSound Pro Headphones,Electronics,NovaSound,5999,3900,2023-01-15
+P005,Nova Phone A15,Electronics,Nova,14999,12200,2023-09-01
+P006,Nova Phone A25 Pro,Electronics,Nova,24999,19800,2024-02-01
+P007,Nova Tab 10,Electronics,Nova,17999,14100,2023-11-01
+P008,PowerMax 20000mAh Power Bank,Electronics,PowerMax,1799,950,2022-05-01
+P009,Nova Smartwatch Fit,Electronics,Nova,3999,2400,2023-08-01
+P010,Nova Laptop Air 14,Electronics,Nova,54999,45500,2024-01-10
+P011,AquaPure RO Water Purifier,Home & Kitchen,AquaPure,12999,8900,2022-03-01
+P012,ChefPro Mixer Grinder 750W,Home & Kitchen,ChefPro,3499,2200,2022-01-01
+P013,ChefPro Air Fryer 4L,Home & Kitchen,ChefPro,5499,3600,2023-04-01
+P014,SteelCraft Cookware Set,Home & Kitchen,SteelCraft,2999,1750,2022-01-01
+P015,BreezeMax BLDC Ceiling Fan,Home & Kitchen,BreezeMax,3799,2500,2023-02-01
+P016,CozyHome Cotton Bedsheet Set,Home & Kitchen,CozyHome,1299,650,2022-01-01
+P017,Men's Cotton Kurta,Fashion,Rangrez,899,380,2022-01-01
+P018,Women's Banarasi Silk Saree,Fashion,Rangrez,3499,1900,2022-01-01
+P019,Slim Fit Denim Jeans,Fashion,UrbanThread,1499,700,2022-01-01
+P020,Stride Running Shoes,Fashion,Stride,2799,1500,2023-01-01
+P021,Classic Leather Wallet,Fashion,UrbanThread,699,280,2022-01-01
+P022,Festive Lehenga Choli,Fashion,Rangrez,6999,3900,2023-08-01
+P023,Royal Basmati Rice 5kg,Grocery,Annapurna,649,520,2022-01-01
+P024,Cold Pressed Groundnut Oil 1L,Grocery,Annapurna,289,225,2022-01-01
+P025,Premium Dry Fruits Box 500g,Grocery,Annapurna,899,610,2022-01-01
+P026,Assam Masala Chai 250g,Grocery,ChaiGhar,199,120,2022-01-01
+P027,Organic Whole Wheat Atta 10kg,Grocery,Annapurna,549,430,2022-01-01
+P028,Neem Herbal Face Wash,Beauty,Vedika,249,110,2022-01-01
+P029,Vitamin C Face Serum,Beauty,Vedika,699,290,2023-03-01
+P030,Onion Hair Oil 200ml,Beauty,Vedika,349,150,2022-01-01
+P031,SunShield Sunscreen SPF50,Beauty,Vedika,449,200,2022-06-01
+P032,Oud Royale Perfume 100ml,Beauty,Attar House,1999,900,2023-10-01

@@ -1,0 +1,15 @@
+store_id,store_name,city,region,store_type,opened_date
+S00,NovaMart Online,Mumbai,National,Online,2019-01-01
+S01,NovaMart Andheri,Mumbai,West,Mall,2019-04-12
+S02,NovaMart Thane,Thane,West,High Street,2020-01-20
+S03,NovaMart Kothrud,Pune,West,High Street,2020-08-15
+S04,NovaMart SG Highway,Ahmedabad,West,Mall,2021-03-05
+S05,NovaMart Connaught Place,Delhi,North,High Street,2019-06-01
+S06,NovaMart Cyber Hub,Gurugram,North,Mall,2020-11-11
+S07,NovaMart Hazratganj,Lucknow,North,High Street,2021-07-01
+S08,NovaMart Koramangala,Bengaluru,South,Mall,2021-01-26
+S09,NovaMart Whitefield,Bengaluru,South,Mall,2025-02-10
+S10,NovaMart T Nagar,Chennai,South,High Street,2025-02-24
+S11,NovaMart Banjara Hills,Hyderabad,South,Mall,2020-02-14
+S12,NovaMart Salt Lake,Kolkata,East,Mall,2020-10-02
+S13,NovaMart Saheed Nagar,Bhubaneswar,East,High Street,2022-04-14

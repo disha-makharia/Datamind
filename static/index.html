@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>DataMind</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23E4371F'/><path d='M9 23V9h6a7 7 0 0 1 0 14z' fill='none' stroke='white' stroke-width='3'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/app.css">
+<script>
+  // apply saved theme before paint to avoid a flash
+  try { const t = JSON.parse(localStorage.getItem("datamind.settings.v1") || "{}").theme;
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+</script>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============ sidebar: chats ============ -->
+  <aside class="sidebar" id="sidebar" aria-label="Conversations">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <div><strong>DataMind</strong><small>Multi-agent data analytics</small></div>
+      <button class="icon-btn only-mobile" id="close-sidebar" type="button" aria-label="Close menu"></button>
+    </div>
+
+    <button class="btn primary block" id="new-chat" type="button"></button>
+
+    <label class="field small">
+      <span data-icon="search"></span>
+      <input type="search" id="chat-search" placeholder="Search chats" aria-label="Search chats">
+    </label>
+
+    <nav class="chat-list" id="chat-list" aria-label="Chat history"></nav>
+
+    <div class="sidebar-foot">
+      <div class="status" id="status" role="status"><span class="dot"></span><span>Connecting…</span></div>
+      <div class="foot-actions">
+        <button class="icon-btn" id="open-shortcuts" type="button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"></button>
+        <button class="icon-btn" id="open-settings" type="button" aria-label="Settings" title="Settings"></button>
+      </div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- ============ main ============ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn only-mobile" id="open-sidebar" type="button" aria-label="Open menu"></button>
+      <nav class="views" aria-label="Sections">
+        <a href="#/chat" data-view="ask"><span data-icon="chat"></span>Ask</a>
+        <a href="#/data" data-view="data"><span data-icon="database"></span>Data</a>
+        <a href="#/docs" data-view="docs"><span data-icon="file"></span>Documents</a>
+      </nav>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme"></button>
+    </header>
+
+    <!-- Ask -->
+    <section class="view" id="view-ask" aria-label="Ask">
+      <div class="thread" id="thread"></div>
+      <div class="composer">
+        <form id="composer" autocomplete="off">
+          <textarea id="question" rows="1" placeholder="Ask a question about your data…" aria-label="Your question"></textarea>
+          <button class="send" id="send" type="submit" aria-label="Ask"></button>
+        </form>
+        <p class="composer-hint"><span><kbd>Enter</kbd> to ask</span><span><kbd>Shift</kbd>+<kbd>Enter</kbd> new line</span><span><kbd>↑</kbd> last question</span><span><kbd>Esc</kbd> stop</span></p>
+      </div>
+    </section>
+
+    <!-- Data -->
+    <section class="view" id="view-data" aria-label="Data" hidden>
+      <div class="split">
+        <div class="pane list-pane">
+          <div class="pane-head"><h2>Tables</h2><span class="count" id="table-count"></span></div>
+          <label class="field small"><span data-icon="search"></span>
+            <input type="search" id="table-filter" placeholder="Filter tables" aria-label="Filter tables"></label>
+          <ul class="cards" id="table-cards"></ul>
+          <div class="drop" data-kind="dataset" tabindex="0" role="button" aria-label="Upload a dataset">
+            <span data-icon="upload"></span>
+            <strong>Add a dataset</strong>
+            <small>Drop a CSV, JSON, Parquet or Excel file, or click to browse</small>
+            <input type="file" accept=".csv,.json,.parquet,.xlsx,.xls" hidden>
+          </div>
+        </div>
+        <div class="pane detail-pane" id="table-detail"></div>
+      </div>
+    </section>
+
+    <!-- Documents -->
+    <section class="view" id="view-docs" aria-label="Documents" hidden>
+      <div class="split docs">
+        <div class="pane detail-pane">
+          <div class="pane-head"><h2>Search documents</h2></div>
+          <p class="muted">Search company documents by meaning, the same way the RAG agent does.</p>
+          <form id="doc-search" class="search-row">
+            <label class="field"><span data-icon="search"></span>
+              <input type="search" id="doc-query" placeholder="e.g. warehouse flood, return policy, festive campaign" aria-label="Search documents"></label>
+            <button class="btn" type="submit">Search</button>
+          </form>
+          <div id="doc-results"></div>
+        </div>
+        <div class="pane list-pane">
+          <div class="pane-head"><h2>Documents</h2><span class="count" id="doc-count"></span></div>
+          <ul class="cards" id="doc-cards"></ul>
+          <div class="drop" data-kind="document" tabindex="0" role="button" aria-label="Upload a document">
+            <span data-icon="upload"></span>
+            <strong>Add a document</strong>
+            <small>Drop a PDF, TXT or Markdown file, or click to browse</small>
+            <input type="file" accept=".pdf,.txt,.md" hidden>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ dialogs ============ -->
+<dialog id="settings" aria-labelledby="settings-title">
+  <form method="dialog">
+    <header><h2 id="settings-title">Settings</h2><button class="icon-btn" value="close" aria-label="Close"></button></header>
+    <fieldset>
+      <legend>Theme</legend>
+      <div class="segmented" id="theme-choice">
+        <label><input type="radio" name="theme" value="system"><span>System</span></label>
+        <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+        <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+      </div>
+    </fieldset>
+    <label class="switch"><input type="checkbox" id="set-debug">
+      <span><strong>Show agent details</strong><small>Include SQL attempts, retrieved passages and chosen tables with each answer.</small></span></label>
+    <label class="switch"><input type="checkbox" id="set-chart">
+      <span><strong>Chart results automatically</strong><small>Show a chart under the answer when the result can be plotted.</small></span></label>
+    <div class="danger-zone">
+      <div><strong>Clear all chats</strong><small>Removes every saved conversation from this browser.</small></div>
+      <button class="btn danger" type="button" id="clear-chats">Clear chats</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="shortcuts" aria-labelledby="shortcuts-title">
+  <form method="dialog">
+    <header><h2 id="shortcuts-title">Keyboard shortcuts</h2><button class="icon-btn" value="close" aria-label="Close"></button></header>
+    <dl class="keys">
+      <dt><kbd>/</kbd></dt><dd>Jump to the question box</dd>
+      <dt><kbd>Ctrl</kbd>+<kbd>K</kbd></dt><dd>Start a new chat</dd>
+      <dt><kbd>Enter</kbd></dt><dd>Ask the question</dd>
+      <dt><kbd>Shift</kbd>+<kbd>Enter</kbd></dt><dd>New line in the question</dd>
+      <dt><kbd>↑</kbd></dt><dd>Recall your last question (when the box is empty)</dd>
+      <dt><kbd>Esc</kbd></dt><dd>Stop the agents, or close a dialog</dd>
+      <dt><kbd>?</kbd></dt><dd>Show this list</dd>
+    </dl>
+  </form>
+</dialog>
+
+<dialog id="confirm" class="small">
+  <form method="dialog">
+    <h2></h2>
+    <p></p>
+    <div class="dialog-actions">
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn danger" value="ok">Delete</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
