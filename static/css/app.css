@@ -8,13 +8,13 @@
   --bg: #F3F3F1;
   --surface: #FBFBFA;
   --sunken: #E9E9E6;
-  --ink: #1E1D1B;
+  --ink: #12131A;
   --muted: #6B6A66;
   --faint: #93918B;
   --rule: #DAD9D5;
   --rule-strong: #BEBCB7;
-  --signal: #E4371F;
-  --signal-hover: #C92D17;
+  --signal: #12131A;          /* brand colour, same as the landing page */
+  --signal-hover: #2B2D3A;
   --on-signal: #FFFFFF;
   --ok: #3E8A55;
   --ok-bg: #E3F0E6;
@@ -38,16 +38,16 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #171615; --surface: #21201E; --sunken: #1C1B19; --ink: #ECEBE7; --muted: #A4A29C;
-  --faint: #7D7B75; --rule: #34322F; --rule-strong: #4A4843; --signal: #F0513A; --signal-hover: #FF6A54;
+  --bg: #12131A; --surface: #1E1F29; --sunken: #181921; --ink: #ECEDF1; --muted: #A3A5B0;
+  --faint: #7A7C88; --rule: #2A2C37; --rule-strong: #3D404D; --signal: #F1F1F4; --signal-hover: #FFFFFF; --on-signal: #12131A;
   --ok: #6FC08A; --ok-bg: #1F3327; --err: #FF8B78; --err-bg: #3B221D; --hover: rgba(255,255,255,.05);
   --a-sup: #A884D6; --a-data: #6DB684; --a-sql: #6F97D6; --a-rag: #E0A057;
   --shadow: 0 12px 32px rgba(0,0,0,.5);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #171615; --surface: #21201E; --sunken: #1C1B19; --ink: #ECEBE7; --muted: #A4A29C;
-    --faint: #7D7B75; --rule: #34322F; --rule-strong: #4A4843; --signal: #F0513A; --signal-hover: #FF6A54;
+    --bg: #12131A; --surface: #1E1F29; --sunken: #181921; --ink: #ECEDF1; --muted: #A3A5B0;
+    --faint: #7A7C88; --rule: #2A2C37; --rule-strong: #3D404D; --signal: #F1F1F4; --signal-hover: #FFFFFF; --on-signal: #12131A;
     --ok: #6FC08A; --ok-bg: #1F3327; --err: #FF8B78; --err-bg: #3B221D; --hover: rgba(255,255,255,.05);
     --a-sup: #A884D6; --a-data: #6DB684; --a-sql: #6F97D6; --a-rag: #E0A057;
     --shadow: 0 12px 32px rgba(0,0,0,.5);
@@ -90,7 +90,7 @@ kbd {
 }
 .btn:hover { border-color: var(--ink); }
 .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.btn.primary:hover { background: var(--signal); border-color: var(--signal); color: var(--on-signal); }
+.btn.primary:hover { background: var(--signal-hover); border-color: var(--signal-hover); color: var(--on-signal); }
 .btn.danger { color: var(--err); border-color: color-mix(in srgb, var(--err) 45%, transparent); }
 .btn.danger:hover { background: var(--err); color: #fff; border-color: var(--err); }
 .btn.ghost { border-color: transparent; background: none; color: var(--muted); padding: 0 10px; }
@@ -125,7 +125,7 @@ kbd {
   -webkit-mask: none; position: relative;
 }
 .brand .logo::after {
-  content: ""; position: absolute; inset: 8px 9px 8px 10px; border: 3px solid #fff;
+  content: ""; position: absolute; inset: 8px 9px 8px 10px; border: 3px solid var(--on-signal);
   border-left-width: 3px; border-radius: 0 8px 8px 0;
 }
 .brand strong { display: block; font-stretch: 72%; font-weight: 800; font-size: 25px; line-height: 1; letter-spacing: -.01em; }

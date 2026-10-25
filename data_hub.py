@@ -6,6 +6,7 @@ Local Data Hub (box 4 in the architecture slide).
   Data Agent uses to pick tables and the SQL Agent uses to write queries
 - Guards and executes SQL (read-only, known tables only, no file access)
 """
+import shutil
 import re
 import threading
 from datetime import date, datetime
@@ -28,6 +29,42 @@ WRITE_NODES = (exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create, exp.Alt
 def _table_name(raw: str) -> str:
     name = re.sub(r"[^0-9a-zA-Z_]", "_", raw.strip()).lower().strip("_")
     return f"t_{name}" if name[:1].isdigit() else (name or "table")
+
+def _fix_header(df: pd.DataFrame) -> pd.DataFrame:
+    """Excel sheets often have a title, blank rows or blank columns above/left of the
+    real header, so pandas names the columns 'Unnamed: 0', 'Unnamed: 1'...
+    Find the real header row and use it."""
+    df = df.dropna(how="all").dropna(axis=1, how="all")          # empty rows / columns
+    if df.empty:
+        return df
+    cols = [str(c) for c in df.columns]
+    unnamed = sum(c.startswith("Unnamed:") for c in cols)
+    if unnamed < len(cols) / 2:                                   # header is already fine
+        return df
+    need = max(2, int(0.6 * df.shape[1]))
+    for i in range(min(20, len(df))):
+        row = df.iloc[i]
+        vals = row.dropna()
+        if len(vals) >= need and all(isinstance(v, str) for v in vals):
+            header, seen = [], {}
+            for j, v in enumerate(row):
+                name = str(v).strip() if pd.notna(v) and str(v).strip() else f"column_{j + 1}"
+                if name in seen:                                   # duplicate names
+                    seen[name] += 1
+                    name = f"{name}_{seen[name]}"
+                else:
+                    seen[name] = 0
+                header.append(name)
+            out = df.iloc[i + 1:].copy()
+            out.columns = header
+            out = out.dropna(how="all").reset_index(drop=True)
+            # columns that became purely numeric after removing the header text
+            for c in out.columns:
+                conv = pd.to_numeric(out[c], errors="coerce")
+                if conv.notna().sum() == out[c].notna().sum() and out[c].notna().any():
+                    out[c] = conv
+            return out
+    return df
 
 
 def _parse_date_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -71,7 +108,8 @@ class DataHub:
                 for sheet, df in pd.read_excel(path, sheet_name=None).items():
                     if df.empty:
                         continue
-                    df = _parse_date_columns(df)
+                    
+                    df = _parse_date_columns(_fix_header(df))
                     name = _table_name(sheet)
                     self.con.register("_tmp_df", df)
                     self.con.execute(f'CREATE OR REPLACE TABLE "{name}" AS SELECT * FROM _tmp_df')
@@ -160,20 +198,25 @@ class DataHub:
         return bool(p) and config.UPLOAD_DIR.resolve() in p.parents
 
     def drop_table(self, table: str) -> None:
-        """Only tables that came from user uploads can be removed."""
+        """Remove a table. Uploaded files are deleted; built-in data files are
+        moved to data/removed/ so they stop loading but can be restored."""
         if table not in self.list_tables():
             raise KeyError(table)
-        if not self.is_uploaded(table):
-            raise PermissionError("Only uploaded tables can be removed")
-        path = self.paths[table]
+        path = self.paths.get(table)
+        uploaded = self.is_uploaded(table)
         with self._lock:
             self.con.execute(f'DROP TABLE "{table}"')
         still_used = [t for t, p in self.paths.items() if p == path and t != table
                       and t in self.list_tables()]
         self.sources.pop(table, None)
         self.paths.pop(table, None)
-        if not still_used and path.exists():
-            path.unlink()
+        if path and not still_used and path.exists():
+            if uploaded:
+                path.unlink()
+            else:
+                removed_dir = config.DATA_DIR / "removed"
+                removed_dir.mkdir(exist_ok=True)
+                shutil.move(str(path), str(removed_dir / path.name))
         self._catalog = None
 
     def preview(self, table: str, limit: int = 50) -> dict:

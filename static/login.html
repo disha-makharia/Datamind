@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Sign in · DataMind</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2312131A'/><path d='M9 23V9h6a7 7 0 0 1 0 14z' fill='none' stroke='white' stroke-width='3'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/site.css">
+<script>
+  try { const t = JSON.parse(localStorage.getItem("datamind.settings.v1") || "{}").theme;
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+</script>
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-side">
+    <a class="brand" href="/" aria-label="DataMind home"><span class="logo" aria-hidden="true"></span><strong>DataMind</strong></a>
+    <h1>Your numbers and the reasons behind them.</h1>
+    <p>Sign in to ask questions about your company's data and documents.</p>
+    <ol class="pipe" aria-hidden="true">
+      <li style="--c:var(--a-sup);--i:0"><b>Supervisor</b></li>
+      <li style="--c:var(--a-data);--i:1"><b>Data</b></li>
+      <li style="--c:var(--a-sql);--i:2"><b>SQL</b></li>
+      <li style="--c:var(--a-rag);--i:3"><b>RAG</b></li>
+      <li style="--c:var(--a-resp);--i:4"><b>Answer</b></li>
+    </ol>
+  </aside>
+
+  <main class="auth-main">
+    <button class="theme-btn" id="theme-toggle" type="button" aria-label="Switch theme"></button>
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist" aria-label="Account">
+        <button type="button" role="tab" id="tab-signin" aria-selected="true" aria-controls="form-signin">Sign in</button>
+        <button type="button" role="tab" id="tab-signup" aria-selected="false" aria-controls="form-signup">Create account</button>
+      </div>
+
+      <form id="form-signin" role="tabpanel" aria-labelledby="tab-signin" novalidate>
+        <h2>Welcome back</h2>
+        <p class="sub">Sign in with your company account.</p>
+        <div class="form-error" role="alert" hidden></div>
+        <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="email" required></label>
+        <label class="field"><span>Password</span><input type="password" name="password" autocomplete="current-password" required></label>
+        <button class="btn primary block" type="submit">Sign in</button>
+        <p class="switch-line">New to DataMind? <button type="button" data-switch="signup">Create an account</button></p>
+      </form>
+
+      <form id="form-signup" role="tabpanel" aria-labelledby="tab-signup" novalidate hidden>
+        <h2>Create your account</h2>
+        <p class="sub">Your team can start asking questions right away.</p>
+        <div class="form-error" role="alert" hidden></div>
+        <label class="field"><span>Company name</span><input type="text" name="company" autocomplete="organization" required></label>
+        <label class="field"><span>Your name</span><input type="text" name="name" autocomplete="name" required></label>
+        <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="email" required></label>
+        <label class="field"><span>Password</span><input type="password" name="password" autocomplete="new-password" minlength="8" required><small>At least 8 characters.</small></label>
+        <button class="btn primary block" type="submit">Create account</button>
+        <p class="switch-line">Already have an account? <button type="button" data-switch="signin">Sign in</button></p>
+      </form>
+
+      <p class="back"><a href="/">Back to the DataMind home page</a></p>
+    </div>
+  </main>
+</div>
+
+<script src="/static/js/theme.js"></script>
+<script>
+  const tabs = { signin: document.getElementById("tab-signin"), signup: document.getElementById("tab-signup") };
+  const forms = { signin: document.getElementById("form-signin"), signup: document.getElementById("form-signup") };
+
+  function show(which) {
+    for (const k of Object.keys(tabs)) {
+      tabs[k].setAttribute("aria-selected", k === which);
+      forms[k].hidden = k !== which;
+    }
+    document.title = (which === "signup" ? "Create account" : "Sign in") + " · DataMind";
+    history.replaceState(null, "", which === "signup" ? "#signup" : location.pathname);
+    forms[which].querySelector("input").focus();
+  }
+  tabs.signin.onclick = () => show("signin");
+  tabs.signup.onclick = () => show("signup");
+  document.querySelectorAll("[data-switch]").forEach((b) => (b.onclick = () => show(b.dataset.switch)));
+  if (location.hash === "#signup") show("signup");
+
+  async function submit(form, url, label, busy) {
+    const err = form.querySelector(".form-error");
+    const btn = form.querySelector("button[type=submit]");
+    const data = Object.fromEntries(new FormData(form));
+    err.hidden = true;
+    if (Object.values(data).some((v) => !String(v).trim())) {
+      err.textContent = "Fill in every field.";
+      err.hidden = false;
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = busy;
+    try {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : "Something went wrong. Try again.");
+      location.href = "/app";
+    } catch (e) {
+      err.textContent = e.message === "Failed to fetch" ? "Can't reach the DataMind server. Is it running?" : e.message;
+      err.hidden = false;
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+  }
+  forms.signin.addEventListener("submit", (e) => { e.preventDefault(); submit(forms.signin, "/auth/login", "Sign in", "Signing in…"); });
+  forms.signup.addEventListener("submit", (e) => { e.preventDefault(); submit(forms.signup, "/auth/signup", "Create account", "Creating account…"); });
+</script>
+</body>
+</html>

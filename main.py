@@ -1,9 +1,11 @@
 """
-API Backend (box 2): FastAPI. Also serves the web UI from static/.
+API Backend (box 2): FastAPI. Also serves the website from static/.
 
 Run:   uvicorn main:app --reload
-UI:    http://127.0.0.1:8000          (DataMind web app)
-Docs:  http://127.0.0.1:8000/docs     (Swagger UI - test the raw API)
+Pages: http://127.0.0.1:8000          landing page
+       http://127.0.0.1:8000/login    sign in / create account
+       http://127.0.0.1:8000/app      the DataMind app (signed-in users only)
+Docs:  http://127.0.0.1:8000/docs     Swagger UI (API calls need a signed-in session)
 """
 import json
 import shutil
@@ -11,34 +13,67 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import auth
 import config
 from data_hub import SUPPORTED, get_hub
 from graph import run, stream
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
+# every API path below needs a signed-in user
+PROTECTED_PREFIXES = ("/ask", "/tables", "/upload", "/documents", "/health")
+
 
 @asynccontextmanager
 async def lifespan(_app):
-    get_hub()   # load data/ into DuckDB once at startup
+    auth.init()     # create the accounts database if needed
+    get_hub()       # load data/ into DuckDB once at startup
     yield
 
 
-app = FastAPI(title="DataMind API", version="0.2.0", lifespan=lifespan,
+app = FastAPI(title="DataMind API", version="0.3.0", lifespan=lifespan,
               description="Multi-agent RAG for data analytics: Supervisor, Data, SQL, RAG agents")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],
+                   allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.middleware("http")
+async def require_sign_in(request: Request, call_next):
+    """Block the API for visitors who are not signed in."""
+    if request.url.path.startswith(PROTECTED_PREFIXES):
+        user = auth.user_for_token(request.cookies.get(auth.COOKIE_NAME))
+        if user is None:
+            return JSONResponse({"detail": "Please sign in to use DataMind."}, status_code=401)
+        request.state.user = user
+    return await call_next(request)
+
+
+def current_user(request: Request) -> dict | None:
+    return auth.user_for_token(request.cookies.get(auth.COOKIE_NAME))
 
 
 class AskRequest(BaseModel):
     question: str
     debug: bool = False
+
+
+class SignupRequest(BaseModel):
+    company: str
+    name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 
 def build_response(question: str, s: dict, debug: bool, seconds: float | None = None) -> dict:
@@ -59,10 +94,63 @@ def build_response(question: str, s: dict, debug: bool, seconds: float | None = 
     return resp
 
 
-# ------------------------------------------------------------------- UI
+# ---------------------------------------------------------------- pages
 @app.get("/", include_in_schema=False)
-def ui():
+def landing():
+    return FileResponse(STATIC_DIR / "landing.html")
+
+
+@app.get("/login", include_in_schema=False)
+def login_page(request: Request):
+    if current_user(request):
+        return RedirectResponse("/app", status_code=303)
+    return FileResponse(STATIC_DIR / "login.html")
+
+
+@app.get("/app", include_in_schema=False)
+def app_page(request: Request):
+    if not current_user(request):
+        return RedirectResponse("/login", status_code=303)
     return FileResponse(STATIC_DIR / "index.html")
+
+
+# ----------------------------------------------------------------- auth
+@app.post("/auth/signup")
+def signup(req: SignupRequest):
+    try:
+        user = auth.create_user(req.company, req.name, req.email, req.password)
+    except auth.AuthError as e:
+        raise HTTPException(400, str(e))
+    resp = JSONResponse({"user": user})
+    resp.set_cookie(value=auth.start_session(user["id"]), **auth.cookie_settings())
+    return resp
+
+
+@app.post("/auth/login")
+def login(req: LoginRequest):
+    try:
+        user = auth.authenticate(req.email, req.password)
+    except auth.AuthError as e:
+        raise HTTPException(401, str(e))
+    resp = JSONResponse({"user": user})
+    resp.set_cookie(value=auth.start_session(user["id"]), **auth.cookie_settings())
+    return resp
+
+
+@app.post("/auth/logout")
+def logout(request: Request):
+    auth.end_session(request.cookies.get(auth.COOKIE_NAME))
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(auth.COOKIE_NAME, path="/")
+    return resp
+
+
+@app.get("/auth/me")
+def me(request: Request):
+    user = current_user(request)
+    if not user:
+        raise HTTPException(401, "Not signed in")
+    return {"user": user}
 
 
 # --------------------------------------------------------------- status

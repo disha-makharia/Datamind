@@ -4,14 +4,21 @@ const OFFLINE = "Can't reach the DataMind server. Start it with: uvicorn main:ap
 
 export class ApiError extends Error {}
 
+// signed out or session expired: go to the sign-in page
+function toLogin() {
+  location.href = "/login";
+  return new ApiError("Please sign in again.");
+}
+
 async function request(path, opts = {}) {
   let res;
   try {
-    res = await fetch(BASE + path, opts);
+    res = await fetch(BASE + path, { credentials: "same-origin", ...opts });
   } catch (e) {
     if (e.name === "AbortError") throw e;
     throw new ApiError(OFFLINE);
   }
+  if (res.status === 401) throw toLogin();
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detail = typeof body.detail === "string" ? body.detail : `Server returned ${res.status}`;
@@ -23,6 +30,8 @@ async function request(path, opts = {}) {
 const enc = encodeURIComponent;
 
 export const api = {
+  me: () => request("/auth/me"),
+  logout: () => request("/auth/logout", { method: "POST" }),
   health: () => request("/health"),
   tables: () => request("/tables"),
   preview: (table, limit = 100) => request(`/tables/${enc(table)}/preview?limit=${limit}`),
@@ -47,6 +56,7 @@ export async function askStream(question, debug, { onStep, signal } = {}) {
   try {
     res = await fetch(BASE + "/ask/stream", {
       method: "POST",
+      credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question, debug }),
       signal,
@@ -55,6 +65,7 @@ export async function askStream(question, debug, { onStep, signal } = {}) {
     if (e.name === "AbortError") throw e;
     throw new ApiError(OFFLINE);
   }
+  if (res.status === 401) throw toLogin();
   if (!res.ok) {
     const b = await res.json().catch(() => ({}));
     throw new ApiError(typeof b.detail === "string" ? b.detail : `Server returned ${res.status}`);

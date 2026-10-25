@@ -48,6 +48,7 @@ function setStaticIcons() {
   $("#close-sidebar").innerHTML = icon("x", 20);
   $("#open-settings").innerHTML = icon("settings");
   $("#open-shortcuts").innerHTML = icon("keyboard");
+  $("#sign-out").innerHTML = `<svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>`;
   $$("dialog header .icon-btn").forEach((b) => { b.innerHTML = icon("x"); });
   hydrateIcons();
   setSendButton(false);
@@ -606,7 +607,7 @@ async function renderTables(selected) {
         <p>${plural(t.row_count, "row")}, ${plural(t.columns.length, "column")}${t.source ? `, from ${esc(t.source)}` : ""}</p></div>
       <div class="btns">
         <button class="btn primary" data-act="ask">${icon("chat", 16)}Ask about this table</button>
-        ${t.uploaded ? `<button class="btn danger" data-act="drop">${icon("trash", 16)}Remove</button>` : ""}
+        <button class="btn danger" data-act="drop">${icon("trash", 16)}Remove</button>
       </div>
     </div>
     <div class="tabs" role="tablist">
@@ -646,7 +647,10 @@ async function renderTables(selected) {
   };
   const drop = $("[data-act=drop]", pane);
   if (drop) drop.onclick = async () => {
-    if (!(await confirmBox(`Remove ${t.table}?`, "The table and its uploaded file will be deleted. Questions can no longer use it.", "Remove"))) return;
+    const msg = t.uploaded
+      ? "The table and its uploaded file will be deleted. Questions can no longer use it."
+      : "The table will be removed. Its file is moved to data/removed/ and can be restored by moving it back.";
+    if (!(await confirmBox(`Remove ${t.table}?`, msg, "Remove"))) return;
     try {
       await api.dropTable(t.table);
       toast(`Removed ${t.table}`);
@@ -771,6 +775,22 @@ async function loadHealth() {
   }
 }
 
+/* ============================================================== account */
+async function loadAccount() {
+  try {
+    const { user } = await api.me();
+    $("#account-company").textContent = user.company;
+    $("#account-user").textContent = `${user.name}, ${user.email}`;
+    $("#account-initial").textContent = user.company.trim().charAt(0).toUpperCase();
+    $("#account").hidden = false;
+  } catch { /* not signed in: api.js already sends the browser to /login */ }
+}
+$("#sign-out").addEventListener("click", async () => {
+  stopRunning();
+  try { await api.logout(); } catch { /* signing out anyway */ }
+  location.href = "/login";
+});
+
 /* ============================================================= settings */
 const settingsDlg = $("#settings");
 $("#open-settings").addEventListener("click", () => {
@@ -816,7 +836,7 @@ async function start() {
   applyTheme();
   renderChatList();
   route();
-  await Promise.all([loadHealth(), loadCatalog(), loadDocs()]);
+  await Promise.all([loadAccount(), loadHealth(), loadCatalog(), loadDocs()]);
   if (app.view === "ask" && !app.chatId) renderThread();   // refresh counts on the welcome screen
   if (app.view === "data") renderTables(app.table);
   if (app.view === "docs") renderDocs();

@@ -1,0 +1,154 @@
+/* DataMind landing page: deliberately different from the app.
+   White page, black type, and the four agent colours as full-bleed cards. */
+:root {
+  --paper: #FFFFFF;
+  --ink: #12131A;
+  --muted: #5D5F6B;
+  --line: #E6E6EA;
+  --nav-bg: rgba(255, 255, 255, .9);
+  --hover: rgba(18, 19, 26, .06);
+  --cta-bg: #12131A;
+  --sup: #6C4AB6;
+  --data: #2F7D50;
+  --sql: #2E5AAC;
+  --rag: #A8561A;
+  --font: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+:root[data-theme="dark"] {
+  --paper: #12131A; --ink: #F1F1F4; --muted: #A3A5B0; --line: #2C2E38;
+  --nav-bg: rgba(17, 18, 24, .88); --hover: rgba(255, 255, 255, .08); --cta-bg: #1C1D26;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --paper: #12131A; --ink: #F1F1F4; --muted: #A3A5B0; --line: #2C2E38;
+    --nav-bg: rgba(17, 18, 24, .88); --hover: rgba(255, 255, 255, .08); --cta-bg: #1C1D26;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 18px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--sql); outline-offset: 3px; border-radius: 4px; }
+
+/* -------------------------------------------------------- progress + nav */
+.progress { position: fixed; inset: 0 0 auto; height: 4px; z-index: 30; background: transparent; }
+.progress span { display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--sup), var(--data), var(--sql), var(--rag)); }
+.nav { position: fixed; top: 4px; left: 0; right: 0; z-index: 20; display: flex; align-items: center;
+  justify-content: space-between; padding: 14px clamp(16px, 4vw, 48px); transition: background .3s, box-shadow .3s; }
+.nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--line); }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; text-decoration: none; letter-spacing: -.02em; }
+.mark { width: 26px; height: 26px; border-radius: 7px; background: var(--ink); position: relative; }
+.mark::after { content: ""; position: absolute; inset: 7px 8px 7px 9px; border: 2.5px solid var(--paper); border-radius: 0 7px 7px 0; }
+.nav-actions { display: flex; align-items: center; gap: 22px; }
+/* same look as the app's theme button */
+.theme-btn { width: 36px; height: 36px; display: grid; place-items: center; border: none; background: none;
+  border-radius: 5px; color: var(--muted); cursor: pointer; padding: 0; }
+.theme-btn:hover { background: var(--hover); color: var(--ink); }
+.theme-btn svg { display: block; }
+.nav-actions .theme-btn { margin-right: -8px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px;
+  border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 600; font-size: 16px; text-decoration: none;
+  transition: transform .2s var(--ease), box-shadow .2s; white-space: nowrap; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, .25); }
+.btn.big { height: 56px; padding: 0 30px; font-size: 18px; }
+.btn.light { background: #fff; color: #12131A; }
+.link { font-weight: 600; font-size: 16px; text-decoration: none; border-bottom: 2px solid transparent; transition: border-color .2s; }
+.link:hover { border-color: currentColor; }
+
+/* ------------------------------------------------------------------ hero */
+.hero { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center;
+  padding: 120px clamp(16px, 6vw, 96px) 64px; position: relative; }
+.hero-title { font-weight: 800; font-size: clamp(48px, 9vw, 136px); line-height: .95; letter-spacing: -.045em; }
+.hero-title .line { display: block; overflow: hidden; padding-bottom: .06em; }
+.hero-title .line > span { display: inline-block; animation: up .9s var(--ease) both; }
+.hero-title .line:nth-child(2) > span { animation-delay: .12s; }
+.hero-title .line:nth-child(3) > span { animation-delay: .24s; color: var(--muted); }
+@keyframes up { from { transform: translateY(105%); } }
+.hero-sub { max-width: 34em; color: var(--muted); font-size: clamp(18px, 1.6vw, 21px); margin-top: 32px; }
+
+.ask { margin-top: 36px; max-width: 640px; display: flex; align-items: center; gap: 4px; min-height: 64px;
+  padding: 0 22px; border: 2px solid var(--ink); border-radius: 999px; font-size: clamp(15px, 1.5vw, 19px); font-weight: 500; }
+.ask-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.caret { width: 2px; height: 1.2em; background: var(--ink); animation: blink 1s steps(1) infinite; flex: none; }
+@keyframes blink { 50% { opacity: 0; } }
+.ask-dots { margin-left: auto; display: flex; gap: 6px; padding-left: 16px; }
+.ask-dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--line); transition: background .25s; }
+.ask.thinking .ask-dots i { animation: pop .4s var(--ease) both; }
+.ask.thinking .ask-dots i:nth-child(1) { background: var(--sup); animation-delay: 0s; }
+.ask.thinking .ask-dots i:nth-child(2) { background: var(--data); animation-delay: .35s; }
+.ask.thinking .ask-dots i:nth-child(3) { background: var(--sql); animation-delay: .7s; }
+.ask.thinking .ask-dots i:nth-child(4) { background: var(--rag); animation-delay: 1.05s; }
+@keyframes pop { from { transform: scale(.2); background: var(--line); } 60% { transform: scale(1.35); } }
+
+.hero-ctas { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; margin-top: 40px; }
+.scroll-hint { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column;
+  align-items: center; gap: 8px; font-size: 14px; color: var(--muted); text-decoration: none; }
+.scroll-hint span { width: 2px; height: 34px; background: linear-gradient(var(--ink), transparent); animation: drip 1.8s var(--ease) infinite; transform-origin: top; }
+@keyframes drip { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* -------------------------------------------------------- section titles */
+.section-title { font-weight: 800; font-size: clamp(36px, 5.5vw, 76px); line-height: 1; letter-spacing: -.04em; max-width: 14ch; }
+
+/* -------------------------------------------------- how: stacking cards */
+.how { padding: 120px clamp(16px, 6vw, 96px) 40px; }
+.stack { margin-top: 64px; }
+.card { position: sticky; top: 96px; min-height: 48vh; border-radius: 28px; color: #fff; padding: clamp(28px, 5vw, 64px);
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto 1fr auto; column-gap: clamp(20px, 4vw, 56px);
+  margin-bottom: 7vh; transform-origin: center top; will-change: transform; }
+.card.c1 { background: var(--sup); }
+.card.c2 { background: var(--data); top: 112px; }
+.card.c3 { background: var(--sql); top: 128px; }
+.card.c4 { background: var(--rag); top: 144px; margin-bottom: 0; }
+.card .num { grid-row: 1 / 4; font-weight: 800; font-size: clamp(64px, 11vw, 168px); line-height: .8; letter-spacing: -.05em; opacity: .35; }
+.card h3 { font-weight: 800; font-size: clamp(40px, 6.5vw, 96px); line-height: 1; letter-spacing: -.04em; }
+.card p { font-size: clamp(19px, 2vw, 26px); line-height: 1.35; max-width: 24em; margin-top: 18px; align-self: start; }
+.card .eg { justify-self: start; font-size: clamp(14px, 1.3vw, 17px); padding: 10px 18px; border-radius: 999px;
+  background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .35); }
+
+/* ------------------------------------------------------------- what you get */
+.get { padding: 140px clamp(16px, 6vw, 96px); }
+.get-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(28px, 4vw, 64px); margin-top: 64px; }
+.get-grid > div { border-top: 3px solid var(--ink); padding-top: 22px; }
+.get-grid > div:nth-child(1) { border-color: var(--sup); }
+.get-grid > div:nth-child(2) { border-color: var(--sql); }
+.get-grid > div:nth-child(3) { border-color: var(--rag); }
+.big-num { display: block; font-weight: 800; font-size: clamp(72px, 9vw, 128px); line-height: .9; letter-spacing: -.05em; }
+.get-grid h3 { font-size: 22px; font-weight: 700; margin: 14px 0 8px; }
+.get-grid p { color: var(--muted); }
+
+/* ---------------------------------------------------------------- CTA */
+.cta { background: var(--cta-bg); color: #fff; padding: 140px clamp(16px, 6vw, 96px); display: flex; flex-direction: column; align-items: flex-start; gap: 40px; }
+.cta h2 { font-weight: 800; font-size: clamp(48px, 8vw, 120px); line-height: .95; letter-spacing: -.045em; max-width: 11ch; }
+.foot { background: var(--cta-bg); color: rgba(255, 255, 255, .55); font-size: 14px; display: flex; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; padding: 24px clamp(16px, 6vw, 96px); border-top: 1px solid rgba(255, 255, 255, .12); }
+
+/* ------------------------------------------------------- scroll reveal */
+[data-reveal] { opacity: 0; transform: translateY(36px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+[data-reveal].in { opacity: 1; transform: none; }
+.get-grid > div:nth-child(2) { transition-delay: .1s; }
+.get-grid > div:nth-child(3) { transition-delay: .2s; }
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 760px) {
+  body { font-size: 17px; }
+  .nav-actions .link { display: none; }
+  .hero { padding-top: 104px; }
+  .ask { min-height: 56px; padding: 0 16px; }
+  .ask-dots i { width: 9px; height: 9px; }
+  .scroll-hint { display: none; }
+  .card { display: flex; flex-direction: column; align-items: flex-start; min-height: 0; border-radius: 22px; top: 80px; margin-bottom: 5vh; }
+  .card p { margin-top: 12px; }
+  .card .eg { margin-top: 24px; }
+  .card.c2 { top: 92px; } .card.c3 { top: 104px; } .card.c4 { top: 116px; }
+  .card .num { font-size: 56px; margin-bottom: 8px; }
+  .get-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  [data-reveal] { opacity: 1; transform: none; }
+}

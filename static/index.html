@@ -5,11 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>DataMind</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23E4371F'/><path d='M9 23V9h6a7 7 0 0 1 0 14z' fill='none' stroke='white' stroke-width='3'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2312131A'/><path d='M9 23V9h6a7 7 0 0 1 0 14z' fill='none' stroke='white' stroke-width='3'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/app.css">
+<style>
+  /* signed-in account block in the sidebar */
+  .account { display: flex; align-items: center; gap: 10px; padding: 10px 4px 0; border-top: 1px solid var(--rule); }
+  .account .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: var(--ink); color: var(--bg); font-weight: 700; font-size: 13px; }
+  .account div { min-width: 0; flex: 1; }
+  .account strong { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .account small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand > a { display: flex; flex: none; }
+</style>
 <script>
   // apply saved theme before paint to avoid a flash
   try { const t = JSON.parse(localStorage.getItem("datamind.settings.v1") || "{}").theme;
@@ -22,7 +32,7 @@
   <!-- ============ sidebar: chats ============ -->
   <aside class="sidebar" id="sidebar" aria-label="Conversations">
     <div class="brand">
-      <span class="logo" aria-hidden="true"></span>
+      <a href="/" aria-label="DataMind home page"><span class="logo" aria-hidden="true"></span></a>
       <div><strong>DataMind</strong><small>Multi-agent data analytics</small></div>
       <button class="icon-btn only-mobile" id="close-sidebar" type="button" aria-label="Close menu"></button>
     </div>
@@ -35,6 +45,12 @@
     </label>
 
     <nav class="chat-list" id="chat-list" aria-label="Chat history"></nav>
+
+    <div class="account" id="account" hidden>
+      <span class="avatar" id="account-initial" aria-hidden="true"></span>
+      <div><strong id="account-company"></strong><small id="account-user"></small></div>
+      <button class="icon-btn" id="sign-out" type="button" aria-label="Sign out" title="Sign out"></button>
+    </div>
 
     <div class="sidebar-foot">
       <div class="status" id="status" role="status"><span class="dot"></span><span>Connecting…</span></div>

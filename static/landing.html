@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>DataMind · Questions in, answers out</title>
+<meta name="description" content="Ask a business question in plain English. DataMind finds the number in your data and the reason in your documents.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2312131A'/><path d='M9 23V9h6a7 7 0 0 1 0 14z' fill='none' stroke='white' stroke-width='3'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/landing.css">
+<script>
+  // apply the saved theme before the page paints (shared with the app)
+  try { const t = JSON.parse(localStorage.getItem("datamind.settings.v1") || "{}").theme;
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
+</script>
+</head>
+<body>
+
+<div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="/" aria-label="DataMind home"><span class="mark" aria-hidden="true"></span>DataMind</a>
+  <div class="nav-actions">
+    <button class="theme-btn" id="theme-toggle" type="button" aria-label="Switch theme"></button>
+    <a class="link" href="/login">Sign in</a>
+    <a class="btn" href="/login#signup">Get started</a>
+  </div>
+</header>
+
+<main>
+  <!-- 1. hero -->
+  <section class="hero">
+    <h1 class="hero-title">
+      <span class="line"><span>Questions in.</span></span>
+      <span class="line"><span>Answers out.</span></span>
+      <span class="line"><span>No SQL needed.</span></span>
+    </h1>
+    <p class="hero-sub" data-reveal>Four AI agents turn a business question into the right number from your data and the reason from your company documents.</p>
+
+    <div class="ask" data-reveal aria-hidden="true">
+      <span class="ask-text" id="typed"></span><span class="caret"></span>
+      <span class="ask-dots"><i></i><i></i><i></i><i></i></span>
+    </div>
+
+    <div class="hero-ctas" data-reveal>
+      <a class="btn big" href="/login#signup">Create a company account</a>
+      <a class="link" href="/login">I already have an account</a>
+    </div>
+  </section>
+
+  <!-- 2. how it works: four stacking cards -->
+  <section class="how" id="how">
+    <h2 class="section-title" data-reveal>Four agents answer every question</h2>
+    <div class="stack">
+      <article class="card c1">
+        <span class="num">01</span>
+        <h3>Supervisor</h3>
+        <p>Reads your question and decides if it needs your data, your documents, or both.</p>
+        <span class="eg">"Why did West sales drop in Q3?" → data and documents</span>
+      </article>
+      <article class="card c2">
+        <span class="num">02</span>
+        <h3>Data</h3>
+        <p>Finds the tables and columns that hold the answer.</p>
+        <span class="eg">sales, products, customers</span>
+      </article>
+      <article class="card c3">
+        <span class="num">03</span>
+        <h3>SQL</h3>
+        <p>Writes the query, checks it is safe, runs it, and fixes it if it fails.</p>
+        <span class="eg">Q3 revenue: ₹8.9 L, down 48% from Q2</span>
+      </article>
+      <article class="card c4">
+        <span class="num">04</span>
+        <h3>RAG</h3>
+        <p>Searches your reports and quotes the passage that explains the numbers.</p>
+        <span class="eg">"Bhiwandi warehouse flooded on 7 July." Q3 Business Review, p.1</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. what you get -->
+  <section class="get">
+    <h2 class="section-title" data-reveal>What you get</h2>
+    <div class="get-grid">
+      <div data-reveal><span class="big-num" data-count="4">0</span><h3>Table formats</h3><p>CSV, Excel, JSON and Parquet, plus PDF, TXT and Markdown documents.</p></div>
+      <div data-reveal><span class="big-num" data-count="0">0</span><h3>Lines of SQL to write</h3><p>Ask in plain English and see the query DataMind wrote.</p></div>
+      <div data-reveal><span class="big-num" data-count="3">0</span><h3>Ways to see the answer</h3><p>A written answer, a table and a chart, with the sources.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. call to action -->
+  <section class="cta">
+    <h2 data-reveal>Start asking your data.</h2>
+    <a class="btn big light" href="/login#signup" data-reveal>Create a company account</a>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>DataMind · Multi-agent RAG for data analytics</span>
+  <span>Major Project, Computer Engineering, VCET</span>
+</footer>
+
+<script src="/static/js/theme.js"></script>
+<script>
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // scroll progress bar + nav shadow
+  const bar = document.getElementById("progress");
+  const nav = document.getElementById("nav");
+  const onScroll = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + "%";
+    nav.classList.toggle("scrolled", scrollY > 8);
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  // reveal elements as they scroll into view
+  const counters = new Set();
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.classList.add("in");
+      const n = e.target.querySelector("[data-count]");
+      if (n && !counters.has(n)) { counters.add(n); countUp(n); }
+      io.unobserve(e.target);
+    }
+  }, { threshold: 0.18 });
+  document.querySelectorAll("[data-reveal]").forEach((el) => (reduce ? el.classList.add("in") : io.observe(el)));
+
+  function countUp(el) {
+    const end = Number(el.dataset.count);
+    if (reduce || end === 0) { el.textContent = end; return; }
+    const t0 = performance.now(), dur = 900;
+    const tick = (t) => {
+      const p = Math.min(1, (t - t0) / dur);
+      el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // stacking cards: the card underneath shrinks a little as the next one slides over it
+  const cards = [...document.querySelectorAll(".card")];
+  if (!reduce) {
+    const shrink = () => {
+      cards.forEach((card, i) => {
+        const next = cards[i + 1];
+        if (!next) return;
+        const r = next.getBoundingClientRect();
+        const start = innerHeight, end = card.getBoundingClientRect().top + 40;
+        const p = Math.min(1, Math.max(0, (start - r.top) / (start - end)));
+        card.style.transform = `scale(${1 - p * 0.06})`;
+        card.style.filter = `brightness(${1 - p * 0.18})`;
+      });
+    };
+    addEventListener("scroll", shrink, { passive: true });
+    addEventListener("resize", shrink);
+    shrink();
+  }
+
+  // typing demo in the hero
+  const questions = [
+    "Why did Electronics sales in the West drop in Q3?",
+    "Which product earned the most profit in 2025?",
+    "What is our return policy for electronics?",
+  ];
+  const typed = document.getElementById("typed");
+  const ask = typed.closest(".ask");
+  if (reduce) { typed.textContent = questions[0]; ask.classList.add("thinking"); return; }
+  let qi = 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  (async function loop() {
+    while (true) {
+      const q = questions[qi % questions.length];
+      ask.classList.remove("thinking");
+      for (let i = 1; i <= q.length; i++) { typed.textContent = q.slice(0, i); await sleep(38); }
+      await sleep(350);
+      ask.classList.add("thinking");
+      await sleep(2600);
+      for (let i = q.length; i >= 0; i--) { typed.textContent = q.slice(0, i); await sleep(12); }
+      qi++;
+    }
+  })();
+})();
+</script>
+</body>
+</html>
